@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using SQLitePCL;
+﻿using Microsoft.AspNetCore.Mvc;
 using SquareApi.Core;
 using SquareApi.Core.Business;
-using SquareApi.Core.Dto;
-using SquareApi.Core.Model;
-using SquareApi.Persitence;
 
 namespace SquareApi.Controllers
 {
@@ -26,8 +15,12 @@ namespace SquareApi.Controllers
             _unitOfWork = unitOfWork;
         }
 
+        /// <summary>
+        /// HttpGet methods to Retrive all the points from DB and return the possible squares can be drwan
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        //[Authorize]
+
         public async Task<IActionResult> Get()
         {
             //Get Points

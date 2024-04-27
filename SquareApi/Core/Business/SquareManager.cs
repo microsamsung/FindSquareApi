@@ -5,38 +5,64 @@ namespace SquareApi.Core.Business
 {
     public class SquareManager
     {
-
+        /// <summary>
+        /// Methods to calculate number of Square can be draw from Points stored in DB
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
         public IEnumerable<Square> IdentifySquares(List<Point> points)
         {
             var squares = new List<Square>();
 
-            // Iterate through all combinations of four points
-            for (int i = 0; i < points.Count; i++)
-            {
-                for (int j = i + 1; j < points.Count; j++)
-                {
-                    for (int k = j + 1; k < points.Count; k++)
-                    {
-                        for (int l = k + 1; l < points.Count; l++)
-                        {
-                            var candidateSquare = new ShapeDto
-                            {
-                                Point1 = points[i],
-                                Point2 = points[j],
-                                Point3 = points[k],
-                                Point4 = points[l]
-                            };
+            // Create a list to store unique points
+            var uniquePoints = new List<Point>();
 
-                            // Check if the candidate points form a square
-                            if (IsSquare(candidateSquare))
+            // Create a dictionary to quickly check if a point exists
+            var pointDictionary = new Dictionary<string, Point>();
+
+            // Iterate through each point and add it to uniquePoints if it's not a duplicate
+            foreach (var point in points)
+            {
+                var key = $"{point.X},{point.Y}";
+                if (!pointDictionary.ContainsKey(key))
+                {
+                    uniquePoints.Add(point);
+                    pointDictionary[key] = point;
+                }
+            }
+
+            // Iterate through each combination of four points
+            for (int i = 0; i < uniquePoints.Count - 3; i++)
+            {
+                for (int j = i + 1; j < uniquePoints.Count - 2; j++)
+                {
+                    for (int k = j + 1; k < uniquePoints.Count - 1; k++)
+                    {
+                        for (int l = k + 1; l < uniquePoints.Count; l++)
+                        {
+                            var p1 = points[i];
+                            var p2 = points[j];
+                            var p3 = points[k];
+                            var p4 = points[l];
+
+                            // Check if the points form a square
+                            if (IsSquare(p1, p2, p3, p4))
                             {
-                                squares.Add(new Square()
+                                // Ensure all points of the square are unique
+                                if (pointDictionary.ContainsKey($"{p1.X},{p1.Y}") &&
+                                    pointDictionary.ContainsKey($"{p2.X},{p2.Y}") &&
+                                    pointDictionary.ContainsKey($"{p3.X},{p3.Y}") &&
+                                    pointDictionary.ContainsKey($"{p4.X},{p4.Y}"))
                                 {
-                                    Point1 = candidateSquare.Point1,
-                                    Point2 = candidateSquare.Point2,
-                                    Point3 = candidateSquare.Point3,
-                                    Point4 = candidateSquare.Point4
-                                });
+                                    squares.Add(new Square
+                                    {
+                                        Id = squares.Count + 1,
+                                        Point1 = p1,
+                                        Point2 = p2,
+                                        Point3 = p3,
+                                        Point4 = p4
+                                    });
+                                }
                             }
                         }
                     }
@@ -46,43 +72,55 @@ namespace SquareApi.Core.Business
             return squares;
         }
 
+        /// <summary>
+        /// Helper method to check if four points form a square
+        /// </summary>
+        /// <param name="p1">p1</param>
+        /// <param name="p2">p2</param>
+        /// <param name="p3">p3</param>
+        /// <param name="p4">p4</param>
+        /// <returns>bool</returns>
 
-
-        private bool IsSquare(ShapeDto shape)
+        private bool IsSquare(Point p1, Point p2, Point p3, Point p4)
         {
-            // Calculate distances between all pairs of points
-            var distances = new double[6];
-            distances[0] = Distance(shape.Point1, shape.Point2);
-            distances[1] = Distance(shape.Point1, shape.Point3);
-            distances[2] = Distance(shape.Point1, shape.Point4);
-            distances[3] = Distance(shape.Point2, shape.Point3);
-            distances[4] = Distance(shape.Point2, shape.Point4);
-            distances[5] = Distance(shape.Point3, shape.Point4);
+            int d2 = DistanceSquare(p1, p2);  // from p1 to p2
+            int d3 = DistanceSquare(p1, p3);  // from p1 to p3
+            int d4 = DistanceSquare(p1, p4);  // from p1 to p4
 
-            // Sort distances to simplify comparison
-            Array.Sort(distances);
-
-            // Check if all sides have equal lengths
-            if (distances[0] != distances[1] || distances[1] != distances[2] || distances[2] != distances[3])
-            {
+            if (d2 == 0 || d3 == 0 || d4 == 0)
                 return false;
+
+            // If lengths of (p1, p2) and (p1, p3) are same, then p4 must be same distance away from p2 and p3
+            if (d2 == d3 && 2 * d2 == d4 && 2 * DistanceSquare(p2, p4) == DistanceSquare(p2, p3))
+            {
+                return true;
             }
 
-            // Check if diagonals have equal lengths
-            if (distances[4] != distances[5])
+            // The above condition is not true, so lengths of (p1, p3) and (p1, p4) must be same
+            if (d3 == d4 && 2 * d3 == d2 && 2 * DistanceSquare(p3, p2) == DistanceSquare(p3, p4))
             {
-                return false;
+                return true;
             }
 
-            // Check if all angles are 90 degrees (optional)
-            // You can skip this check if not required
+            // The above condition is not true, so lengths of (p1, p2) and (p1, p4) must be same
+            if (d2 == d4 && 2 * d2 == d3 && 2 * DistanceSquare(p2, p3) == DistanceSquare(p2, p4))
+            {
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
-        private double Distance(Point p1, Point p2)
+        /// <summary>
+        /// Helper method to calculate distance between two points
+        /// </summary>
+        /// <param name="p1">p1</param>
+        /// <param name="p2">p2</param>
+        /// <returns></returns>
+
+        private int DistanceSquare(Point p1, Point p2)
         {
-            return Math.Sqrt(Math.Pow(p2.X - p1.X, 2) + Math.Pow(p2.Y - p1.Y, 2));
+            return (p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);
         }
     }
 }

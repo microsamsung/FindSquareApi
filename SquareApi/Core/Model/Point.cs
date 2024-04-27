@@ -2,6 +2,9 @@
 
 namespace SquareApi.Core.Model
 {
+    /// <summary>
+    /// Class to hold the ID and Cordinates
+    /// </summary>
     public class Point
     {
         public int Id { get; set; }
