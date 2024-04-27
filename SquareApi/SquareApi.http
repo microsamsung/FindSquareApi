@@ -1,0 +1,6 @@
+@SquareApi_HostAddress = http://localhost:5171
+
+GET {{SquareApi_HostAddress}}/squareapi/
+Accept: application/json
+
+###
