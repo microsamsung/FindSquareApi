@@ -5,7 +5,7 @@ using SquareApi.Core.Business;
 namespace SquareApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SquareController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

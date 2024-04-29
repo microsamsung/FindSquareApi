@@ -6,7 +6,7 @@ using SquareApi.Core.Model;
 namespace SquareApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class PointController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -22,7 +22,6 @@ namespace SquareApi.Controllers
         /// <param name="points"></param>
         /// <returns></returns>
         [HttpPost(Name = "Add")]
-        //[Authorize]
         public async Task Add(IEnumerable<PointDto> points)
         {
             foreach (var point in points)
