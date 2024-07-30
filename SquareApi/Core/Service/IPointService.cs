@@ -5,10 +5,12 @@ namespace SquareApi.Core.Service
 {
     public interface IPointService
     {
-        Task Add(Point point);
+        Task AddAsync(Point point);
 
-        Task<bool> Delete(int id);
+        Task<bool> DeleteAsync(int id);
 
-        Task<IEnumerable<Point>> GetAll();
+        Task<IEnumerable<Point>> GetAllAsync();
+
+        Task<bool> DeleteAllAsync();
     }
 }

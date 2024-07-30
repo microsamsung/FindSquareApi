@@ -1,6 +1,6 @@
 ﻿using SquareApi.Core.Service;
 
-namespace SquareApi.Core
+namespace SquareApi.Persistence.UOW
 {
     public interface IUnitOfWork
     {

@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SquareApi.Core;
-using SquareApi.Persistence;
+using Microsoft.OpenApi.Models;
+using SquareApi.Persistence.UOW;
 using SquareApi.Persitence;
+using Swashbuckle.AspNetCore.SwaggerGen;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SquareApiContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SquareApiContext") ?? throw new InvalidOperationException("Connection string 'SquareApiContext' not found.")));
@@ -13,7 +14,17 @@ builder.Services.AddDbContext<SquareApiContext>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Add Swagger
+// Add Swagger
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Square API",
+        Description = "An API to manage points and identify possible squares"
+    });
+});
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

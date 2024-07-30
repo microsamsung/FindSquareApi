@@ -1,10 +1,13 @@
 ﻿using SquareApi.Core.Dto;
 using SquareApi.Core.Model;
+using System.Collections.Concurrent;
 
 namespace SquareApi.Core.Business
 {
     public class SquareManager
     {
+        private readonly object _lockObject = new object();
+
         /// <summary>
         /// Methods to calculate number of Square can be draw from Points stored in DB
         /// </summary>
@@ -14,59 +17,69 @@ namespace SquareApi.Core.Business
         {
             var squares = new List<Square>();
 
-            // Create a list to store unique points
-            var uniquePoints = new List<Point>();
-
-            // Create a dictionary to quickly check if a point exists
-            var pointDictionary = new Dictionary<string, Point>();
-
-            // Iterate through each point and add it to uniquePoints if it's not a duplicate
-            foreach (var point in points)
+            try
             {
-                var key = $"{point.X},{point.Y}";
-                if (!pointDictionary.ContainsKey(key))
-                {
-                    uniquePoints.Add(point);
-                    pointDictionary[key] = point;
-                }
-            }
+                // Create a list to store unique points
+                var uniquePoints = new List<Point>();
 
-            // Iterate through each combination of four points
-            for (int i = 0; i < uniquePoints.Count - 3; i++)
-            {
-                for (int j = i + 1; j < uniquePoints.Count - 2; j++)
+                // Create a dictionary to quickly check if a point exists
+                var pointDictionary = new ConcurrentDictionary<string, Point>();
+
+                // Iterate through each point and add it to uniquePoints if it's not a duplicate
+                foreach (var point in points)
                 {
-                    for (int k = j + 1; k < uniquePoints.Count - 1; k++)
+                    var key = $"{point.X},{point.Y}";
+                    if (pointDictionary.TryAdd(key, point))
                     {
-                        for (int l = k + 1; l < uniquePoints.Count; l++)
-                        {
-                            var p1 = points[i];
-                            var p2 = points[j];
-                            var p3 = points[k];
-                            var p4 = points[l];
+                        uniquePoints.Add(point);
+                    }
+                }
 
-                            // Check if the points form a square
-                            if (IsSquare(p1, p2, p3, p4))
+                // Iterate through each combination of four points
+                for (int i = 0; i < uniquePoints.Count - 3; i++)
+                {
+                    for (int j = i + 1; j < uniquePoints.Count - 2; j++)
+                    {
+                        for (int k = j + 1; k < uniquePoints.Count - 1; k++)
+                        {
+                            for (int l = k + 1; l < uniquePoints.Count; l++)
                             {
-                                // Ensure all points of the square are unique
-                                if (pointDictionary.ContainsKey($"{p1.X},{p1.Y}") &&
-                                    pointDictionary.ContainsKey($"{p2.X},{p2.Y}") &&
-                                    pointDictionary.ContainsKey($"{p3.X},{p3.Y}") &&
-                                    pointDictionary.ContainsKey($"{p4.X},{p4.Y}"))
+                                var p1 = uniquePoints[i];
+                                var p2 = uniquePoints[j];
+                                var p3 = uniquePoints[k];
+                                var p4 = uniquePoints[l];
+
+                                // Check if the points form a square
+                                if (IsSquare(p1, p2, p3, p4))
                                 {
-                                    squares.Add(new Square
+                                    // Ensure all points of the square are unique
+                                    if (pointDictionary.ContainsKey($"{p1.X},{p1.Y}") &&
+                                        pointDictionary.ContainsKey($"{p2.X},{p2.Y}") &&
+                                        pointDictionary.ContainsKey($"{p3.X},{p3.Y}") &&
+                                        pointDictionary.ContainsKey($"{p4.X},{p4.Y}"))
                                     {
-                                        Id = squares.Count + 1,
-                                        Point1 = p1,
-                                        Point2 = p2,
-                                        Point3 = p3,
-                                        Point4 = p4
-                                    });
+                                        lock (_lockObject)
+                                        {
+                                            squares.Add(new Square
+                                            {
+                                                Id = squares.Count + 1,
+                                                Point1 = p1,
+                                                Point2 = p2,
+                                                Point3 = p3,
+                                                Point4 = p4
+                                            });
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (logging mechanism not shown here)
+                // For example, using a logger instance: _logger.LogError(ex, "Error identifying squares");
             }
 
             return squares;
@@ -80,7 +93,6 @@ namespace SquareApi.Core.Business
         /// <param name="p3">p3</param>
         /// <param name="p4">p4</param>
         /// <returns>bool</returns>
-
         private bool IsSquare(Point p1, Point p2, Point p3, Point p4)
         {
             int d2 = DistanceSquare(p1, p2);  // from p1 to p2
@@ -117,7 +129,6 @@ namespace SquareApi.Core.Business
         /// <param name="p1">p1</param>
         /// <param name="p2">p2</param>
         /// <returns></returns>
-
         private int DistanceSquare(Point p1, Point p2)
         {
             return (p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);

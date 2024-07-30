@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SquareApi.Core;
 using SquareApi.Core.Service;
 using SquareApi.Persistence.Repositories;
 using SquareApi.Persitence;
 
-namespace SquareApi.Persistence
+namespace SquareApi.Persistence.UOW
 {
     public class UnitOfWork : IUnitOfWork
     {
