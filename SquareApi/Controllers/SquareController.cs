@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SquareApi.Core.Business;
 using SquareApi.Persistence.UOW;
-using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.Swagger.Annotations;
 
 namespace SquareApi.Controllers
 {

@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using SquareApi.Core.Model;
 using SquareApi.Persistence.Repositories;
 using SquareApi.Persitence;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SquareApi.Persistence.Tests
 {

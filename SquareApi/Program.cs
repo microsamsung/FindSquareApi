@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using SquareApi.Persistence.UOW;
 using SquareApi.Persitence;
-using Swashbuckle.AspNetCore.SwaggerGen;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<SquareApiContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SquareApiContext") ?? throw new InvalidOperationException("Connection string 'SquareApiContext' not found.")));
